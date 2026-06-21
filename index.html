@@ -80,6 +80,17 @@
             align-items: center;
             text-align: center;
             transition: all 0.5s ease;
+            width: 100%;
+        }
+
+        /* Contenedor que alinea el logo y el botón hamburguesa */
+        .top-header-bar {
+            display: flex;
+            justify-content: center; /* Centrado por defecto en el inicio */
+            align-items: center;
+            width: 100%;
+            position: relative;
+            transition: all 0.5s ease;
         }
 
         .logo h1 {
@@ -132,6 +143,12 @@
         header.compact .header-content {
             margin-bottom: 0;
             align-items: flex-start;
+            width: auto;
+        }
+
+        /* Mueve el logo hacia la izquierda cuando se hace scroll */
+        header.compact .top-header-bar {
+            justify-content: flex-start;
         }
 
         header.compact .logo h1 {
@@ -753,27 +770,174 @@
         /* === ANIMACIONES DE SCROLL (Aparición) === */
         .reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1); }
         .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* =========================================
+           === MEDIA QUERIES & RESPONSIVE DESIGN === 
+           ========================================= */
+
+        /* Estilos base del botón hamburguesa (oculto en PC) */
+        .mobile-menu-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--accent-gold);
+            font-size: 2.8rem;
+            cursor: pointer;
+            transition: transform 0.3s ease, color 0.3s ease;
+            text-shadow: 2px 2px 4px var(--border-dark);
+            z-index: 101;
+            /* Posicionamiento absoluto para no empujar el título */
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            height: 50px;
+            margin: auto;
+        }
+
+        .mobile-menu-btn:hover { color: var(--btn-hover); }
+        .mobile-menu-btn.active { transform: rotate(90deg); }
+
+        /* Breakpoint: 1200px */
+        @media (max-width: 1200px) {
+            .container { width: 98%; }
+            .logo h1 { font-size: 5rem; }
+        }
+
+        /* Breakpoint: 992px */
+        @media (max-width: 992px) {
+            .logo h1 { font-size: 4rem; }
+            .header-subtitle { font-size: 1.1rem; padding: 0 20px; }
+            .catalog-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+            .form-row { gap: 15px; }
+        }
+
+        /* Breakpoint: 768px (Tablets y Menú Hamburguesa) */
+        @media (max-width: 768px) {
+            header { padding: 15px 4%; }
+            
+            /* Asegura que en móviles, incluso scrolleando, se mantenga 100% de ancho */
+            .header-content, header.compact .header-content { 
+                flex-direction: column; 
+                width: 100%; 
+                position: relative; 
+                align-items: center; 
+            }
+            
+            /* El logo se mantiene en el centro en celulares todo el tiempo */
+            header.compact .top-header-bar {
+                justify-content: center; 
+            }
+
+            .logo h1 { font-size: 3rem; margin-bottom: 0; }
+            header.compact .logo h1 { font-size: 2.2rem; }
+            
+            .mobile-menu-btn { display: block; }
+            .header-subtitle { display: none; } /* Ocultamos el subtítulo para limpiar la interfaz móvil */
+
+            /* Lógica del menú desplegable */
+            nav#main-nav {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: rgba(58, 24, 20, 0.98); /* var(--bg-header) con opacidad */
+                backdrop-filter: blur(8px);
+                border-bottom: 3px solid var(--accent-gold);
+                transform: scaleY(0);
+                transform-origin: top;
+                transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                box-shadow: 0 15px 25px rgba(0,0,0,0.9);
+            }
+
+            nav#main-nav.menu-open { transform: scaleY(1); }
+
+            nav#main-nav ul {
+                flex-direction: column;
+                padding: 20px 0;
+                gap: 15px;
+            }
+
+            nav#main-nav ul li { width: 90%; }
+            nav#main-nav ul li a, nav#main-nav ul li button {
+                display: block;
+                width: 100%;
+                text-align: center;
+                padding: 18px; /* Targets táctiles generosos */
+                font-size: 1.3rem;
+            }
+
+            /* Ajuste de formulario modal para evitar desbordamientos */
+            .form-row { flex-direction: column; gap: 0; }
+            .sell-form-container { padding: 25px 20px; margin: 10px; }
+            .btn-close-modal { top: 5px; right: 15px; }
+            
+            section { padding-top: 100px; margin-top: -70px; }
+            .section-title { font-size: 1.8rem; }
+        }
+
+        /* Breakpoint: 576px (Móviles estándar) */
+        @media (max-width: 576px) {
+            .logo h1 { font-size: 2.5rem; }
+            
+            /* Catálogo a 1 columna pura */
+            .catalog-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            .product-img-container { height: 280px; } 
+
+            /* Carrito full width */
+            .cart-sidebar { 
+                width: 100%; 
+                right: -100%; 
+                border-left: none;
+            }
+            
+            /* Filtros en bloque para no usar scroll horizontal */
+            .filters { flex-direction: column; padding: 0 10px; gap: 10px; }
+            .filter-btn { width: 100%; font-size: 1.2rem; padding: 15px; }
+
+            /* Botones de acción apilados */
+            .card-actions { flex-direction: column; gap: 10px; }
+            .btn { padding: 18px; font-size: 1.1rem; } 
+            
+            .price-tag { text-align: center; font-size: 2.5rem; }
+        }
+
+        /* Breakpoint: 480px (Móviles pequeños) */
+        @media (max-width: 480px) {
+            .logo h1 { font-size: 2.2rem; }
+            .product-detail-overlay h4 { font-size: 1.4rem; }
+            .product-detail-overlay p { font-size: 1rem; }
+            .close-btn { width: 100%; padding: 15px; font-size: 1.1rem; }
+            .tutorial-card { padding: 20px 15px; }
+            .cart-header h2 { font-size: 1.5rem; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- === ENCABEZADO DINÁMICO === -->
+    <!-- === ENCABEZADO DINÁMICO RESPONSIVE === -->
     <header id="main-header">
         <div class="header-content">
-            <div class="logo">
-                <h1>GROOVE</h1>
+            <div class="top-header-bar">
+                <div class="logo">
+                    <h1>GROOVE</h1>
+                </div>
+                <!-- Nuevo botón hamburguesa -->
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
             </div>
             <p class="header-subtitle"></p>
         </div>
-        <nav>
+        <nav id="main-nav">
             <ul>
-                <!-- "Inicio" ya no es necesario porque el header es el inicio, pero lo enlazamos arriba -->
                 <li><a href="#" onclick="window.scrollTo(0,0); return false;">Inicio</a></li>
                 <li><a href="#catalogo">Catálogo</a></li>
                 <li><a href="#ayuda">Ayuda</a></li>
                 <li><a href="#" class="nav-highlight" onclick="openSellForm(event)">Crear Anuncio</a></li>
                 <li>
-                    <button class="cart-icon-btn" onclick="toggleCart()">
+                    <button class="cart-icon-btn" onclick="toggleCart()" style="width: 100%; justify-content: center;">
                         🛒 Carrito (<span id="cart-count">0</span>)
                     </button>
                 </li>
@@ -1215,6 +1379,36 @@
     <script>
         let cart = [];
         let idCounter = 12; 
+
+        // --- FUNCIONES DE NAVEGACIÓN MÓVIL ---
+        function toggleMobileMenu() {
+            const nav = document.getElementById('main-nav');
+            const btn = document.querySelector('.mobile-menu-btn');
+            
+            nav.classList.toggle('menu-open');
+            btn.classList.toggle('active');
+            
+            // Alternar ícono (Hamburguesa a X)
+            if (nav.classList.contains('menu-open')) {
+                btn.innerHTML = '✕';
+            } else {
+                btn.innerHTML = '☰';
+            }
+        }
+
+        // Cierra el menú automáticamente al hacer clic en cualquier enlace
+        document.querySelectorAll('#main-nav a').forEach(link => {
+            link.addEventListener('click', () => {
+                const nav = document.getElementById('main-nav');
+                const btn = document.querySelector('.mobile-menu-btn');
+                
+                if(nav.classList.contains('menu-open')) {
+                    nav.classList.remove('menu-open');
+                    btn.classList.remove('active');
+                    btn.innerHTML = '☰';
+                }
+            });
+        });
 
         // Manejo del Header Dinámico (Scroll)
         window.addEventListener('scroll', () => {
