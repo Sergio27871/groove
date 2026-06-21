@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GROOVE</title>
+    <!-- Favicon de Guitarra -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎸</text></svg>">
+    <style>
+        /* === PALETA DE COLORES OBLIGATORIA === */
+        :root {
+            --bg-main: #111111;       /* Fondo principal oscuro profundo */
+            --bg-header: #3A1814;     /* Header - Marrón caoba/madera oscura */
+            --bg-panel: #28362F;      /* Paneles y tarjetas - Verde oliva muy oscuro */
+            --btn-primary: #8B2E24;   /* Botones - Rojo vino/sangre */
+            --btn-hover: #B5412E;     /* Hover - Rojo vivo vintage */
+            --accent-gold: #C8A14A;   /* Detalles - Dorado/Mostaza (Ribetes Marshall) */
+            --text-main: #EAE3D2;     /* Texto principal - Hueso/Pergamino */
+            --border-dark: #111111;   /* Bordes - Negro absoluto */
+        }
+
+        /* Reset y fuentes */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Textura global de grano/ruido tipo vinilo o película de los 70 */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.035; 
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 0%, #1e1e1e 0%, var(--bg-main) 70%);
+        }
+
+        /* Custom Scrollbar Vintage */
+        ::-webkit-scrollbar { width: 12px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); border-left: 1px solid var(--border-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--bg-header); border: 1px solid var(--accent-gold); border-radius: 6px; }
+
+        /* === NUEVO ENCABEZADO DINÁMICO === */
+        header {
+            background: linear-gradient(to bottom, #4a1f1a, var(--bg-header));
+            border-bottom: 3px solid var(--border-dark);
+            padding: 60px 2%; /* Amplio inicialmente */
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.8), inset 0 -2px 0 var(--accent-gold);
+            transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all 0.5s ease;
+        }
+
+        .logo h1 {
+            font-size: 6rem; /* Muy grande en el inicio */
+            font-weight: 900;
+            color: var(--accent-gold);
+            text-shadow: 4px 4px 6px var(--border-dark), 0 0 25px rgba(200, 161, 74, 0.5); 
+            letter-spacing: 5px;
+            font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; 
+            transform: skewX(-5deg); 
+            margin-bottom: 15px;
+            transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .header-subtitle {
+            font-size: 1.25rem;
+            color: #d0c8b6;
+            max-width: 900px;
+            margin-bottom: 35px;
+            text-shadow: 1px 1px 3px #000;
+            transition: all 0.4s ease;
+            opacity: 1;
+            max-height: 100px;
+        }
+
+        header nav {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            transition: all 0.5s ease;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            margin: 0; padding: 0;
+        }
+
+        /* --- ESTADO COMPACTO (AL HACER SCROLL) --- */
+        header.compact {
+            padding: 10px 4%;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        header.compact .header-content {
+            margin-bottom: 0;
+            align-items: flex-start;
+        }
+
+        header.compact .logo h1 {
+            font-size: 2.5rem; /* Vuelve a su tamaño de barra normal */
+            margin-bottom: 0;
+            text-shadow: 2px 2px 4px var(--border-dark), 0 0 15px rgba(200, 161, 74, 0.4); 
+            letter-spacing: 3px;
+        }
+
+        header.compact .header-subtitle {
+            opacity: 0;
+            max-height: 0;
+            margin: 0;
+            overflow: hidden; /* Oculta el texto suavemente */
+        }
+
+        header.compact nav {
+            width: auto;
+            justify-content: flex-end;
+        }
+
+        /* Estilos de botones del Header */
+        nav ul li a, nav ul li button {
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 10px 18px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            border-radius: 8px; 
+            border: 1px solid rgba(234, 227, 210, 0.1);
+            background: rgba(0, 0, 0, 0.2);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+
+        nav ul li a:hover, nav ul li button:hover {
+            transform: translateY(-3px);
+            background: var(--bg-panel);
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.6), inset 0 0 10px rgba(200, 161, 74, 0.1);
+        }
+
+        .nav-highlight {
+            border-color: var(--accent-gold) !important;
+            color: var(--accent-gold) !important;
+        }
+
+        .cart-icon-btn {
+            background: linear-gradient(135deg, var(--btn-hover), var(--btn-primary)) !important;
+            color: var(--text-main) !important;
+            border: 1px solid var(--accent-gold) !important;
+            box-shadow: 0 4px 10px rgba(139, 46, 36, 0.4) !important;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cart-icon-btn:hover {
+            background: linear-gradient(135deg, #d34a34, var(--btn-hover)) !important;
+            box-shadow: 0 6px 15px rgba(139, 46, 36, 0.6), 0 0 10px var(--accent-gold) !important;
+        }
+
+        /* CONTENEDOR PRINCIPAL */
+        .container {
+            width: 96%;
+            max-width: 1600px;
+            margin: 50px auto;
+            padding: 0 10px;
+        }
+
+        section {
+            display: block;
+            margin-bottom: 90px;
+            padding-top: 130px; 
+            margin-top: -100px;
+        }
+
+        /* Títulos estilo chapas/etiquetas vintage */
+        .section-title {
+            font-size: 2.2rem;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+            display: inline-block;
+            background: linear-gradient(to bottom, #d8b45c, var(--accent-gold));
+            color: var(--bg-main);
+            padding: 8px 25px;
+            border-radius: 6px;
+            border: 2px solid var(--border-dark);
+            box-shadow: 4px 4px 0px var(--border-dark), 0 10px 20px rgba(0,0,0,0.5);
+            font-weight: 900;
+            letter-spacing: 1px;
+            position: relative;
+        }
+        
+        .section-title::before, .section-title::after {
+            content: "•";
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--border-dark);
+            font-size: 1.5rem;
+        }
+        .section-title::before { left: 8px; }
+        .section-title::after { right: 8px; }
+
+        /* Botones estilo pedal de guitarra / analógico */
+        .cta-btn {
+            background: linear-gradient(to bottom, var(--btn-hover), var(--btn-primary));
+            color: var(--text-main);
+            padding: 15px 35px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 10px;
+            border: 2px solid var(--border-dark);
+            box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), 0 8px 0 var(--border-dark), 0 15px 20px rgba(0,0,0,0.5);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cta-btn:active {
+            transform: translateY(8px);
+            box-shadow: inset 0 2px 0 rgba(255,255,255,0.1), 0 0px 0 var(--border-dark), 0 5px 10px rgba(0,0,0,0.5);
+        }
+
+        .concept-card {
+            background-color: var(--bg-header);
+            color: var(--text-main);
+            padding: 35px;
+            border-radius: 12px;
+            border: 1px solid var(--border-dark);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.6), 8px 8px 25px rgba(0,0,0,0.7);
+            position: relative;
+        }
+        
+        .concept-card::after {
+            content: ''; position: absolute; top: 10px; right: 10px;
+            width: 20px; height: 20px; border-top: 3px solid var(--accent-gold); border-right: 3px solid var(--accent-gold);
+            opacity: 0.5;
+        }
+
+        /* FILTROS DE CATÁLOGO */
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 25px;
+            background: rgba(40, 54, 47, 0.4);
+            color: var(--text-main);
+            border: 1px solid var(--accent-gold);
+            border-radius: 20px; 
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--accent-gold);
+            color: var(--bg-main);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(200, 161, 74, 0.3);
+        }
+
+        /* === CATÁLOGO Y TARJETAS === */
+        .catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 40px;
+        }
+
+        .product-card {
+            background: linear-gradient(160deg, var(--bg-panel) 0%, #1a231f 100%);
+            border-radius: 14px;
+            border: 1px solid #3c4f45;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative; 
+            overflow: hidden;
+            box-shadow: 8px 8px 25px rgba(0,0,0,0.8), inset 0 0 0 2px rgba(200, 161, 74, 0.15); 
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 15px 15px 35px rgba(0,0,0,0.9), inset 0 0 0 2px var(--accent-gold);
+            z-index: 5;
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 15px;
+            right: -10px;
+            background-color: #d1c5a5;
+            color: var(--border-dark);
+            padding: 5px 25px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            font-family: 'Comic Sans MS', cursive, sans-serif; 
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            z-index: 2;
+            transform: rotate(5deg);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .product-img-container {
+            width: 100%;
+            height: 220px;
+            background: radial-gradient(circle at 50% 40%, #3e3224 0%, var(--border-dark) 80%);
+            border-radius: 8px;
+            border: 2px solid #222;
+            box-shadow: inset 0 0 20px #000;
+            margin-bottom: 25px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            color: var(--accent-gold);
+        }
+
+        .product-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+            transition: transform 0.5s;
+        }
+
+        .product-card:hover .product-img-container img {
+            transform: scale(1.05); 
+        }
+
+        .product-info h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: var(--text-main);
+            height: 60px;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .product-meta {
+            font-size: 0.95rem;
+            color: #b8b1a2; 
+            margin-bottom: 8px;
+            border-bottom: 1px dashed rgba(234, 227, 210, 0.1); 
+            padding-bottom: 4px;
+        }
+        .product-meta:last-of-type { border-bottom: none; }
+        .product-meta span { font-weight: bold; color: var(--accent-gold); }
+
+        .price-tag {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--accent-gold);
+            margin: 20px 0;
+            display: block;
+            text-shadow: 2px 2px 4px #000;
+            letter-spacing: -1px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: auto;
+        }
+
+        .btn {
+            padding: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            border: 1px solid var(--border-dark);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+            flex: 1;
+            text-align: center;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-detail {
+            background-color: var(--bg-header); 
+            color: var(--text-main);
+            border-color: #5a322b;
+        }
+
+        .btn-add {
+            background: linear-gradient(to bottom, var(--btn-hover), var(--btn-primary));
+            color: var(--text-main);
+            border-color: #5c1810;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.6);
+        }
+        
+        .btn-detail:hover {
+            background-color: #4a2721;
+            color: var(--accent-gold);
+        }
+
+        .btn-add:hover {
+            background: linear-gradient(to bottom, #d34a34, var(--btn-hover));
+            box-shadow: 0 6px 15px rgba(139, 46, 36, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        }
+
+        /* OVERLAY DE DETALLE */
+        .product-detail-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(17, 17, 17, 0.92); 
+            backdrop-filter: blur(8px);
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+            color: var(--text-main);
+            border-radius: 14px;
+        }
+
+        .product-detail-overlay h4 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--accent-gold);
+            border-bottom: 2px solid var(--btn-primary);
+            padding-bottom: 10px;
+            text-shadow: 2px 2px 5px #000;
+        }
+
+        .product-detail-overlay p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .close-btn {
+            background-color: transparent;
+            color: var(--accent-gold);
+            padding: 8px 25px;
+            border: 2px solid var(--accent-gold);
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .close-btn:hover {
+            background-color: var(--accent-gold);
+            color: var(--bg-main);
+        }
+
+        /* === MODAL GLOBAL PARA FORMULARIO "CREAR ANUNCIO" === */
+        .form-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 2000; 
+            display: none; align-items: center; justify-content: center; 
+            backdrop-filter: blur(5px);
+        }
+        
+        .form-overlay.active { display: flex; }
+
+        .sell-form-container {
+            background: linear-gradient(135deg, var(--bg-panel) 0%, #1e2923 100%);
+            padding: 40px;
+            border-radius: 14px;
+            border: 2px solid var(--accent-gold);
+            box-shadow: 10px 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .sell-form-container::-webkit-scrollbar { width: 8px; }
+        .sell-form-container::-webkit-scrollbar-thumb { background: var(--accent-gold); border-radius: 4px; }
+        
+        /* Detalles visuales estilo contrato de venta o ticket backstage */
+        .sell-form-container::before {
+            content: "CONTRATO DE CONSIGNACIÓN";
+            position: absolute;
+            top: 0; left: 30px;
+            background-color: var(--bg-main);
+            color: var(--accent-gold);
+            padding: 5px 15px;
+            font-weight: bold;
+            border: 1px solid var(--accent-gold);
+            border-top: none;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
+
+        .btn-close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: transparent;
+            color: var(--text-main);
+            border: none;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+            line-height: 1;
+        }
+        
+        .btn-close-modal:hover { color: var(--btn-hover); transform: scale(1.1); }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            color: var(--accent-gold);
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .form-row { display: flex; gap: 20px; }
+        .form-row .form-group { flex: 1; }
+
+        .sell-form-container input[type="text"],
+        .sell-form-container input[type="number"],
+        .sell-form-container select,
+        .sell-form-container textarea {
+            background-color: rgba(0,0,0,0.6);
+            border: 1px solid #4a5c53;
+            color: var(--text-main);
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
+        }
+
+        .sell-form-container input:focus,
+        .sell-form-container select:focus,
+        .sell-form-container textarea:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.8), 0 0 8px rgba(200, 161, 74, 0.4);
+        }
+
+        .sell-form-container textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Input de archivo estilizado */
+        .file-upload-wrapper {
+            position: relative;
+            background: rgba(0,0,0,0.6);
+            border: 2px dashed #4a5c53;
+            padding: 20px;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .file-upload-wrapper:hover {
+            border-color: var(--accent-gold);
+            background: rgba(200, 161, 74, 0.05);
+        }
+        .file-upload-wrapper input[type="file"] {
+            position: absolute;
+            left: 0; top: 0; width: 100%; height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .file-upload-text {
+            color: var(--accent-gold);
+            font-weight: bold;
+        }
+        .file-upload-text span {
+            display: block; font-size: 0.9rem; color: #888; margin-top: 5px; font-weight: normal;
+        }
+
+        /* === SECCIÓN AYUDA / TUTORIAL === */
+        .tutorial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .tutorial-card {
+            background: linear-gradient(135deg, var(--bg-header) 0%, #20100d 100%);
+            border-radius: 12px;
+            border: 1px solid #4a2823;
+            box-shadow: 5px 5px 20px rgba(0,0,0,0.6);
+            padding: 30px;
+            position: relative;
+        }
+        
+        .tutorial-card::before {
+            content: ''; position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+            width: 12px; height: 12px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #a0a0a0, #333);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.8);
+        }
+
+        .tutorial-card h3 {
+            font-size: 1.3rem;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            color: var(--accent-gold);
+            border-bottom: 1px dashed rgba(200, 161, 74, 0.3);
+            padding-bottom: 10px;
+            text-align: center;
+        }
+
+        .tutorial-card p {
+            font-size: 1.05rem;
+            color: #d0c8b6;
+            text-align: justify;
+        }
+
+        /* === CARRITO LATERAL (SIDEBAR) === */
+        .cart-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 999; display: none; backdrop-filter: blur(4px);
+        }
+        .cart-overlay.active { display: block; }
+
+        .cart-sidebar {
+            position: fixed; top: 0; right: -500px;
+            width: 450px; max-width: 100%; height: 100vh;
+            background: linear-gradient(to bottom, var(--bg-panel), var(--bg-main));
+            color: var(--text-main);
+            border-left: 3px solid var(--accent-gold);
+            box-shadow: -15px 0px 40px rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            transition: right 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; flex-direction: column;
+        }
+        .cart-sidebar.open { right: 0; }
+
+        .cart-header {
+            background-color: var(--bg-header); padding: 25px;
+            border-bottom: 2px solid var(--border-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .cart-header h2 { font-size: 1.8rem; text-transform: uppercase; color: var(--accent-gold); text-shadow: 2px 2px 4px #000; }
+
+        .close-cart-btn {
+            background: none; border: none; font-size: 2.5rem; font-weight: bold;
+            cursor: pointer; color: var(--text-main); transition: color 0.2s; line-height: 1;
+        }
+        .close-cart-btn:hover { color: var(--btn-hover); transform: scale(1.1); }
+
+        .cart-items { padding: 20px; flex-grow: 1; overflow-y: auto; }
+
+        .cart-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px; margin-bottom: 15px; background-color: rgba(0,0,0,0.4);
+            border: 1px solid #333; border-radius: 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); transition: background 0.3s;
+        }
+        .cart-item:hover { background-color: rgba(0,0,0,0.6); border-color: var(--accent-gold); }
+        .cart-item-info { display: flex; align-items: center; gap: 15px; }
+
+        .btn-remove {
+            background: linear-gradient(to bottom, #d34a34, var(--btn-primary));
+            color: var(--text-main); border: 1px solid var(--border-dark); border-radius: 5px;
+            font-weight: bold; padding: 5px 12px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .btn-remove:hover { background: var(--btn-hover); }
+
+        .cart-footer {
+            padding: 25px; border-top: 2px solid var(--border-dark);
+            background-color: var(--bg-header); box-shadow: 0 -4px 15px rgba(0,0,0,0.5);
+        }
+        .cart-total {
+            font-size: 2.2rem; font-weight: 900; text-align: right;
+            margin-bottom: 25px; color: var(--accent-gold); text-shadow: 2px 2px 5px #000;
+        }
+        .cart-actions { display: flex; flex-direction: column; gap: 15px; }
+
+        /* FOOTER */
+        footer {
+            background: linear-gradient(to top, #000, var(--bg-header));
+            color: var(--text-main); text-align: center; padding: 40px 20px;
+            border-top: 2px solid var(--accent-gold); font-size: 1.1rem; margin-top: 60px;
+            box-shadow: 0 -10px 20px rgba(0,0,0,0.5);
+        }
+
+        /* === ANIMACIONES DE SCROLL (Aparición) === */
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <!-- === ENCABEZADO DINÁMICO === -->
+    <header id="main-header">
+        <div class="header-content">
+            <div class="logo">
+                <h1>GROOVE</h1>
+            </div>
+            <p class="header-subtitle"></p>
+        </div>
+        <nav>
+            <ul>
+                <!-- "Inicio" ya no es necesario porque el header es el inicio, pero lo enlazamos arriba -->
+                <li><a href="#" onclick="window.scrollTo(0,0); return false;">Inicio</a></li>
+                <li><a href="#catalogo">Catálogo</a></li>
+                <li><a href="#ayuda">Ayuda</a></li>
+                <li><a href="#" class="nav-highlight" onclick="openSellForm(event)">Crear Anuncio</a></li>
+                <li>
+                    <button class="cart-icon-btn" onclick="toggleCart()">
+                        🛒 Carrito (<span id="cart-count">0</span>)
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+
+        <!-- Tarjeta de Concepto, justo antes del catálogo -->
+        <div class="concept-card reveal" style="margin-bottom: 60px; margin-top: 20px;">
+            <h3 style="color: var(--accent-gold); font-size: 1.6rem; margin-bottom: 15px; text-transform: uppercase;">Bienvenido a GROOVE!</h3>
+            <p style="font-size: 1.15rem; color: #d0c8b6; line-height: 1.8;">Un espacio exclusivo diseñado por y para melómanos, coleccionistas y amantes de la música en busca de reliquias con historia.</p>
+            <p style="font-size: 1.15rem; color: #d0c8b6; line-height: 1.8;">Compra o vende vinilos icónicos y equipamiento vintage con alma.</p>
+        </div>
+
+        <!-- SECCIÓN CATÁLOGO -->
+        <section id="catalogo" class="reveal" style="padding-top: 60px; margin-top: -60px;">
+            <h2 class="section-title">Catálogo RetroVerse</h2>
+            
+            <div class="filters">
+                <button class="filter-btn active" onclick="filterCategory('todos', this)">Todos</button>
+                <button class="filter-btn" onclick="filterCategory('instrumentos', this)">Instrumentos</button>
+                <button class="filter-btn" onclick="filterCategory('ropa', this)">Ropa</button>
+                <button class="filter-btn" onclick="filterCategory('coleccion', this)">Colección</button>
+            </div>
+
+            <div class="catalog-grid" id="catalog-grid">
+                
+                <!-- Producto 1 -->
+                <div class="product-card reveal" data-category="instrumentos">
+                    <span class="product-badge">¡ULTIMO!</span>
+                    <div class="product-img-container">
+                        <img src="Gibson.jpg" alt="Guitarra Gibson Les Paul 1978">
+                    </div>
+                    <div class="product-info">
+                        <h3>Guitarra Gibson Les Paul 1978</h3>
+                        <div class="product-meta"><span>Categoría:</span> Instrumentos</div>
+                        <div class="product-meta"><span>Marca:</span> Gibson</div>
+                        <div class="product-meta"><span>Stock:</span> 1</div>
+                        <div class="product-meta"><span>Estado:</span> Usado</div>
+                        <div class="product-meta"><span>Vendedor:</span> @vintage_strums</div>
+                        <span class="price-tag">$2500.00</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-detail" onclick="openDetail('desc-1')">Ver detalle</button>
+                        <button class="btn btn-add" onclick="addToCart('Gibson Les Paul 1978', 2500)">+ Carrito</button>
+                    </div>
+                    <div id="desc-1" class="product-detail-overlay">
+                        <h4>Gibson Les Paul</h4>
+                        <p>Auténtica joya fabricada en Kalamazoo. Conserva todo su hardware original y un sonido robusto inigualable.</p>
+                        <button class="close-btn" onclick="closeDetail('desc-1')">Cerrar X</button>
+                    </div>
+                </div>
+
+                <!-- Producto 2 -->
+                <div class="product-card reveal" data-category="coleccion">
+                    <span class="product-badge">Joyita</span>
+                    <div class="product-img-container">
+                        <img src="darkside.jpg" alt="Vinilo Pink Floyd - Dark Side">
+                    </div>
+                    <div class="product-info">
+                        <h3>Vinilo Pink Floyd - Dark Side</h3>
+                        <div class="product-meta"><span>Categoría:</span> Colección</div>
+                        <div class="product-meta"><span>Marca:</span> Harvest Records</div>
+                        <div class="product-meta"><span>Stock:</span> 3</div>
+                        <div class="product-meta"><span>Estado:</span> Usado</div>
+                        <div class="product-meta"><span>Vendedor:</span> @vinyl_collector</div>
+                        <span class="price-tag">$120.00</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-detail" onclick="openDetail('desc-2')">Ver detalle</button>
+                        <button class="btn btn-add" onclick="addToCart('Vinilo Pink Floyd Dark Side', 120)">+ Carrito</button>
+                    </div>
+                    <div id="desc-2" class="product-detail-overlay">
+                        <h4>Vinilo Pink Floyd</h4>
+                        <p>Edición británica original de 1973. Disco testeado sin saltos, con fritura mínima.</p>
+                        <button class="close-btn" onclick="closeDetail('desc-2')">Cerrar X</button>
+                    </div>
+                </div>
+
+                <!-- Producto 3 -->
+                <div class="product-card reveal" data-category="ropa">
+                    <div class="product-img-container">
+                        <img src="zeppelin remera.jpg" alt="Remera Led Zeppelin Tour 1977">
+                    </div>
+                    <div class="product-info">
+                        <h3>Remera Led Zeppelin Tour 1977</h3>
+                        <div class="product-meta"><span>Categoría:</span> Ropa</div>
+                        <div class="product-meta"><span>Marca:</span> RockMerch</div>
+                        <div class="product-meta"><span>Stock:</span> 15</div>
+                        <div class="product-meta"><span>Estado:</span> Nuevo</div>
+                        <div class="product-meta"><span>Vendedor:</span> @retro_threads</div>
+                        <span class="price-tag">$45.00</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-detail" onclick="openDetail('desc-3')">Ver detalle</button>
+                        <button class="btn btn-add" onclick="addToCart('Remera Led Zeppelin', 45)">+ Carrito</button>
+                    </div>
+                    <div id="desc-3" class="product-detail-overlay">
+                        <h4>Remera Led Zeppelin</h4>
+                        <p>Confeccionada en algodón 100% premium. Réplica exacta del tour norteamericano de 1977.</p>
+                        <button class="close-btn" onclick="closeDetail('desc-3')">Cerrar X</button>
+                    </div>
+                </div>
+
+                <!-- Producto 4 -->
+                <div class="product-card reveal" data-category="instrumentos">
+                    <div class="product-img-container">
+                        <img src="telecaster.jpg" alt="Guitarra Fender Telecaster">
+                    </div>
+                    <div class="product-info">
+                        <h3>Guitarra Fender Telecaster</h3>
+                        <div class="product-meta"><span>Categoría:</span> Instrumentos</div>
+                        <div class="product-meta"><span>Marca:</span> Fender</div>
+                        <div class="product-meta"><span>Stock:</span> 2</div>
+                        <div class="product-meta"><span>Estado:</span> Usado</div>
+                        <div class="product-meta"><span>Vendedor:</span> @twang_master</div>
+                        <span class="price-tag">$1800.00</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-detail" onclick="openDetail('desc-4')">Ver detalle</button>
+                        <button class="btn btn-add" onclick="addToCart('Fender Telecaster', 1800)">+ Carrito</button>
+                    </div>
+                    <div id="desc-4" class="product-detail-overlay">
+                        <h4>Fender Telecaster</h4>
+                        <p>El clásico sonido "twang". Mástil de arce, cuerpo de fresno. Ideal para rock, blues y country.</p>
+                        <button class="close-btn" onclick="closeDetail('desc-4')">Cerrar X</button>
+                    </div>
+                </div>
+
+                <!-- Producto 5 -->
+                <div class="product-card reveal" data-category="instrumentos">
+                    <div class="product-img-container">
+                        <img src="inanez.jpg" alt="Bajo Ibanez SR300">
+                    </div>
+                    <div class="product-info">
+                        <h3>Bajo Ibanez SR300</h3>
+                        <div class="product-meta"><span>Categoría:</span> Instrumentos</div>
+                        <div class="product-meta"><span>Marca:</span> Ibanez</div>
+                        <div class="product-meta"><span>Stock:</span> 4</div>
+                        <div class="product-meta"><span>Estado:</span> Nuevo</div>
+                        <div class="product-meta"><span>Vendedor:</span> @bass_grooves</div>
+                        <span class="price-tag">$450.00</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-detail" onclick="openDetail('desc-5')">Ver detalle</button>
+                        <button class="btn btn-add" onclick="addToCart('Bajo Ibanez SR300', 450)">+ Carrito</button>
+                    </div>
+                    <div id="desc-5" class="product-detail-overlay">
+                        <h4>Bajo Ibanez SR300</h4>
+                        <p>Diseño ergonómico, mástil rápido y ecualizador activo de 3 bandas para versatilidad total.</p>
+                        <button class="close-btn" onclick="closeDetail('desc-5')">Cerrar X</button>
+                    </div>
+                </div>
+
+                <!-- Producto 6 -->
+                <div class="product-card reveal" data-category="instrumentos">
+                    <div class="product-img-container">
+                        <img src="casioprivia.jpg" alt="Piano Eléctrico Casio Privia">
+                    </div>
+                    <div class="product-info">
+                        <h3>Piano Eléctrico Casio Privia</h3>
+                        <div class="product-meta"><span>Categoría:</span> Instrumentos</div>
+                        <div class="product-meta"><span>Marca:</span> Casio</div>
+                        <div class="product-meta"><span>Stock:</span> 3</div>
+                        <div class="product-meta"><span>Estado:</span> Nuevo</div>
+                        <div class="product-meta"><span>Vendedor:</span> @keys_store</div>
+                        <span class="price-tag">$650.00</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-detail" onclick="openDetail('desc-6')">Ver detalle</button>
+                        <button class="btn btn-add" onclick="addToCart('Piano Casio Privia', 650)">+ Carrito</button>
+                    </div>
+                    <div id="desc-6" class="product-detail-overlay">
+                        <h4>Piano Casio Privia</h4>
+                        <p>Teclas de acción de martillo a escala inteligente. Perfil ultra delgado y sonido acústico realista.</p>
+                        <button class="close-btn" onclick="closeDetail('desc-6')">Cerrar X</button>
+                    </div>
+                </div>
+
+                <!-- Producto 7 -->
+                <div class="product-card reveal" data-category="ropa">
+                    <div class="product-img-container">
+                        <img src="metallica.jpg" alt="Remera Metallica Ride the Lightning">
+                    </div>
+                    <div class="product-info">
+                        <h3>Remera Metallica Ride the Lightning</h3>
+                        <div class="product-meta"><span>Categoría:</span> Ropa</div>
+                        <div class="product-meta"><span>Marca:</span> MetalMerch</div>
+                        <div class="product-meta"><span>Stock:</span> 20</div>
+                        <div class="product-meta"><span>Estado:</span> Nuevo</div>
+                        <div class="product-meta"><span>Vendedor:</span> @metal_head_shop</div>
+                        <span class="price-tag">$35.00</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-detail" onclick="openDetail('desc-7')">Ver detalle</button>
+                        <button class="btn btn-add" onclick="addToCart('Remera Metallica', 35)">+ Carrito</button>
+                    </div>
+                    <div id="desc-7" class="product-detail-overlay">
+                        <h4>Remera Metallica</h4>
+                        <p>Diseño clásico del segundo álbum de estudio. Impresión de alta durabilidad en algodón peinado.</p>
+                        <button class="close-btn" onclick="closeDetail('desc-7')">Cerrar X</button>
+                    </div>
+                </div>
+
+                <!-- Producto 8 -->
+                <div class="product-card reveal" data-category="ropa">
+                    <div class="product-img-container">
+                        <img src="buzo soad.jpg" alt="Buzo System of a Down Toxicity">
+                    </div>
+                    <div class="product-info">
+                        <h3>Buzo System of a Down Toxicity</h3>
+                        <div class="product-meta"><span>Categoría:</span> Ropa</div>
+                        <div class="product-meta"><span>Marca:</span> NuMetalGear</div>
+                        <div class="product-meta"><span>Stock:</span> 10</div>
+                        <div class="product-meta"><span>Estado:</span> Nuevo</div>
+                        <div class="product-meta"><span>Vendedor:</span> @alt_wear</div>
+                        <span class="price-tag">$60.00</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-detail" onclick="openDetail('desc-8')">Ver detalle</button>
+                        <button class="btn btn-add" onclick="addToCart('Buzo SOAD', 60)">+ Carrito</button>
+                    </div>
+                    <div id="desc-8" class="product-detail-overlay">
+                        <h4>Buzo SOAD Toxicity</h4>
+                        <p>Buzo canguro con capucha y friza invisible. Arte de tapa oficial del icónico álbum del 2001.</p>
+                        <button class="close-btn" onclick="closeDetail('desc-8')">Cerrar X</button>
+                    </div>
+                </div>
+
+                <!-- Producto 9 -->
+                <div class="product-card reveal" data-category="coleccion">
+                    <div class="product-img-container">
+                        <img src="nevermind.jpg" alt="Vinilo Nirvana Nevermind">
+                    </div>
+                    <div class="product-info">
+                        <h3>Vinilo Nirvana Nevermind</h3>
+                        <div class="product-meta"><span>Categoría:</span> Colección</div>
+                        <div class="product-meta"><span>Marca:</span> DGC Records</div>
+                        <div class="product-meta"><span>Stock:</span> 5</div>
+                        <div class="product-meta"><span>Estado:</span> Nuevo</div>
+                        <div class="product-meta"><span>Vendedor:</span> @grunge_vinyls</div>
+                        <span class="price-tag">$40.00</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-detail" onclick="openDetail('desc-9')">Ver detalle</button>
+                        <button class="btn btn-add" onclick="addToCart('Vinilo Nirvana Nevermind', 40)">+ Carrito</button>
+                    </div>
+                    <div id="desc-9" class="product-detail-overlay">
+                        <h4>Vinilo Nirvana Nevermind</h4>
+                        <p>Reedición en vinilo de 180 gramos remasterizado. Un disco fundamental de la década de los 90.</p>
+                        <button class="close-btn" onclick="closeDetail('desc-9')">Cerrar X</button>
+                    </div>
+                </div>
+
+                <!-- Producto 10 -->
+                <div class="product-card reveal" data-category="coleccion">
+                    <div class="product-img-container">
+                        <img src="mezmerize.jpg" alt="Vinilo System of a Down Mezmerize">
+                    </div>
+                    <div class="product-info">
+                        <h3>Vinilo System of a Down Mezmerize</h3>
+                        <div class="product-meta"><span>Categoría:</span> Colección</div>
+                        <div class="product-meta"><span>Marca:</span> American Recordings</div>
+                        <div class="product-meta"><span>Stock:</span> 2</div>
+                        <div class="product-meta"><span>Estado:</span> Usado</div>
+                        <div class="product-meta"><span>Vendedor:</span> @wax_records</div>
+                        <span class="price-tag">$55.00</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-detail" onclick="openDetail('desc-10')">Ver detalle</button>
+                        <button class="btn btn-add" onclick="addToCart('Vinilo SOAD Mezmerize', 55)">+ Carrito</button>
+                    </div>
+                    <div id="desc-10" class="product-detail-overlay">
+                        <h4>Vinilo SOAD Mezmerize</h4>
+                        <p>Primera edición de 2005. Presenta insert original y disco en excelente estado de conservación (VG+).</p>
+                        <button class="close-btn" onclick="closeDetail('desc-10')">Cerrar X</button>
+                    </div>
+                </div>
+
+                <!-- Producto 11 -->
+                <div class="product-card reveal" data-category="coleccion">
+                    <span class="product-badge">¡ULTIMO!</span>
+                    <div class="product-img-container">
+                        <img src="tocadiscos.jpg" alt="Tocadiscos Seasonlife">
+                    </div>
+                    <div class="product-info">
+                        <h3>Tocadiscos Seasonlife</h3>
+                        <div class="product-meta"><span>Categoría:</span> Colección</div>
+                        <div class="product-meta"><span>Marca:</span> Seasonlife</div>
+                        <div class="product-meta"><span>Stock:</span> 1</div>
+                        <div class="product-meta"><span>Estado:</span> Usado</div>
+                        <div class="product-meta"><span>Vendedor:</span> @audio_vintage</div>
+                        <span class="price-tag">$150.00</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-detail" onclick="openDetail('desc-11')">Ver detalle</button>
+                        <button class="btn btn-add" onclick="addToCart('Tocadiscos Seasonlife', 150)">+ Carrito</button>
+                    </div>
+                    <div id="desc-11" class="product-detail-overlay">
+                        <h4>Tocadiscos Seasonlife</h4>
+                        <p>Diseño retro en maletín de madera, altavoces integrados y conectividad Bluetooth. Ideal para iniciarse en el vinilo.</p>
+                        <button class="close-btn" onclick="closeDetail('desc-11')">Cerrar X</button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECCIÓN TUTORIAL (AYUDA) -->
+        <section id="ayuda" class="reveal">
+            <h2 class="section-title">Ayuda/Tutorial</h2>
+            <div class="tutorial-grid">
+                <div class="tutorial-card">
+                    <h3>1. Filtrar Productos 🔍</h3>
+                    <p>En el catálogo, usa los botones estilo púa de guitarra de la parte superior (Todos, Instrumentos, Ropa, Colección) para aislar las reliquias que te interesan.</p>
+                </div>
+                <div class="tutorial-card">
+                    <h3>2. Ver Detalles 📖</h3>
+                    <p>Haz clic en el botón oscuro <strong>"Ver detalle"</strong> de cualquier caja para desplegar su historia de backstage sin perder tu lugar en el foso.</p>
+                </div>
+                <div class="tutorial-card">
+                    <h3>3. Crear Anuncio 🎸</h3>
+                    <p>Usa la sección de "Crear Anuncio" en el menú, sube una foto del articulo que te gustaria vender y publicala en tiempo real en la tienda para que otros la compren.</p>
+                </div>
+                <div class="tutorial-card">
+                    <h3>4. Uso del Carrito 🛒</h3>
+                    <p>Añade productos con el botón Rojo Vino. Pulsa el botón <strong>"Carrito"</strong> en la barra superior y se abrirá tu estuche lateral.</p>
+                </div>
+            </div>
+        </section>
+
+    </div> <!-- FIN CONTAINER -->
+
+    <!-- === MODAL OCULTO: CREAR ANUNCIO === -->
+    <div class="form-overlay" id="sell-modal-overlay" onclick="closeSellForm(event)">
+        <div class="sell-form-container" onclick="event.stopPropagation()">
+            <!-- Botón cerrar (X) -->
+            <button class="btn-close-modal" onclick="closeSellForm(event)">×</button>
+            
+            <h2 style="font-size: 2.2rem; color: var(--accent-gold); margin-bottom: 10px; margin-top: 15px; text-transform: uppercase;">Crear Anuncio</h2>
+            <p style="margin-bottom: 25px; font-size: 1.1rem; color: #d0c8b6;">¿Tienes alguna pieza con historia que quieras compartir en la red RetroVerse? Llena los datos, sube una foto y publícala automáticamente en nuestro catálogo global.</p>
+            
+            <form id="form-venta" onsubmit="publicarAnuncio(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="v-nombre">Nombre del Producto</label>
+                        <input type="text" id="v-nombre" placeholder="Ej: Amplificador Marshall JCM800..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="v-categoria">Categoría</label>
+                        <select id="v-categoria" required>
+                            <option value="" disabled selected>Selecciona una opción...</option>
+                            <option value="instrumentos">Instrumentos</option>
+                            <option value="ropa">Ropa / Indumentaria</option>
+                            <option value="coleccion">Colección / Vinilos</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="v-marca">Marca / Productora</label>
+                        <input type="text" id="v-marca" placeholder="Ej: Fender, Harvest..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="v-precio">Precio de Venta ($)</label>
+                        <input type="number" id="v-precio" placeholder="0.00" min="1" step="0.01" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="v-estado">Estado de Conservación</label>
+                        <select id="v-estado" required>
+                            <option value="Usado">Usado (Con historia / Marcas de uso)</option>
+                            <option value="Nuevo">Nuevo (Impecable / Sellado)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="v-vendedor">Tu Usuario (Vendedor)</label>
+                        <input type="text" id="v-vendedor" placeholder="Ej: @tu_usuario_rock" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="v-desc">Descripción / Historia del artículo</label>
+                    <textarea id="v-desc" placeholder="Detalla su procedencia, marcas de uso, si tiene partes originales..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Foto del Producto</label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="v-foto" accept="image/png, image/jpeg, image/webp" onchange="mostrarNombreArchivo()" required>
+                        <div class="file-upload-text" id="file-name-display">
+                            📸 Haz clic aquí para subir una imagen de tu computadora
+                            <span>Formatos: .JPG, .PNG</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button type="submit" class="cta-btn" style="width: 100%; max-width: 400px; font-size: 1.4rem;">Publicar en el Catálogo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL / SIDEBAR DEL CARRITO -->
+    <div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h2>Tu Carrito</h2>
+            <button class="close-cart-btn" onclick="toggleCart()">×</button>
+        </div>
+        <div class="cart-items" id="cart-items-container">
+            <p style="color: #888; font-style: italic; text-align: center; margin-top: 50px;">Tu carrito está esperando que agregues música con historia...</p>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                Total: $<span id="cart-total-val">0.00</span>
+            </div>
+            <div class="cart-actions">
+                <button class="cta-btn" style="width: 100%; background: var(--bg-header); border: 2px solid var(--accent-gold); box-shadow: none;" onclick="clearCart()">Cancelar / Vaciar Carrito</button>
+                <button class="cta-btn" style="width: 100%;" onclick="checkout()">Proceder al Checkout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIE DE PÁGINA -->
+    <footer>
+        <p style="font-size: 1.3rem; margin-bottom: 10px; color: var(--accent-gold); font-weight: bold;">GROOVE App</p>
+        <p>Un E-commerce hecho por músicos, para los músicos</p>
+        <p style="font-size: 0.9rem; margin-top: 15px; color: #777;">Todos los derechos reservados © RetroVerse System</p>
+    </footer>
+
+    <!-- INTERACTIVIDAD JS -->
+    <script>
+        let cart = [];
+        let idCounter = 12; 
+
+        // Manejo del Header Dinámico (Scroll)
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('main-header');
+            if (window.scrollY > 30) {
+                header.classList.add('compact');
+            } else {
+                header.classList.remove('compact');
+            }
+        });
+
+        // Ventana emergente interna de detalles
+        function openDetail(overlayId) {
+            document.getElementById(overlayId).style.display = "flex";
+        }
+
+        function closeDetail(overlayId) {
+            document.getElementById(overlayId).style.display = "none";
+        }
+
+        // Filtro de Categorías
+        function filterCategory(category, btnElement) {
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            const products = document.querySelectorAll('.product-card');
+            products.forEach(product => {
+                if (category === 'todos') {
+                    product.style.display = "flex";
+                } else {
+                    if (product.getAttribute('data-category') === category) {
+                        product.style.display = "flex";
+                    } else {
+                        product.style.display = "none";
+                    }
+                }
+            });
+        }
+
+        // --- FUNCIONES DEL CARRITO ---
+        function toggleCart() {
+            document.getElementById('cart-sidebar').classList.toggle('open');
+            document.getElementById('cart-overlay').classList.toggle('active');
+        }
+
+        function addToCart(name, price) {
+            cart.push({ name, parseFloat: parseFloat(price) });
+            updateCartUI();
+            
+            const btn = event.target;
+            const originalText = btn.innerText;
+            const originalBg = btn.style.background;
+            
+            btn.innerText = "¡Agregado!";
+            btn.style.background = "var(--accent-gold)";
+            btn.style.color = "var(--bg-main)";
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = originalBg;
+                btn.style.color = "var(--text-main)";
+            }, 1000);
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function clearCart() {
+            if(cart.length === 0) {
+                alert("El carrito ya está vacío.");
+                return;
+            }
+            if(confirm("¿Estás seguro de que deseas cancelar la compra y vaciar el carrito?")) {
+                cart = [];
+                updateCartUI();
+                toggleCart();
+            }
+        }
+        
+        function checkout() {
+            if(cart.length === 0) {
+                alert("Agrega productos al carrito antes de comprar.");
+                return;
+            }
+            alert("¡Simulación de Compra Exitosa! Conectando con la estructura del backend...");
+            cart = [];
+            updateCartUI();
+            toggleCart();
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cart-items-container');
+            const totalSpan = document.getElementById('cart-total-val');
+            document.getElementById('cart-count').innerText = cart.length;
+            
+            if(cart.length === 0) {
+                container.innerHTML = `<p style="color: #888; font-style: italic; text-align: center; margin-top: 50px;">Tu carrito está esperando que agregues música con historia...</p>`;
+                totalSpan.innerText = "0.00";
+                return;
+            }
+            
+            container.innerHTML = "";
+            let total = 0;
+            cart.forEach((item, index) => {
+                let itemPrice = parseFloat(item.parseFloat);
+                total += itemPrice;
+                container.innerHTML += `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <button class="btn-remove" onclick="removeFromCart(${index})" title="Eliminar producto">X</button>
+                            <span><strong>${item.name}</strong></span>
+                        </div>
+                        <span style="font-size: 1.2rem; color: var(--accent-gold); font-weight: bold;">$${itemPrice.toFixed(2)}</span>
+                    </div>
+                `;
+            });
+            totalSpan.innerText = total.toFixed(2);
+        }
+
+        // --- FUNCIONES PARA CREAR ANUNCIO (MODAL) ---
+        function openSellForm(e) {
+            if (e) e.preventDefault();
+            document.getElementById('sell-modal-overlay').classList.add('active');
+        }
+
+        function closeSellForm(e) {
+            if (e) e.preventDefault();
+            document.getElementById('sell-modal-overlay').classList.remove('active');
+        }
+
+        function mostrarNombreArchivo() {
+            const input = document.getElementById('v-foto');
+            const display = document.getElementById('file-name-display');
+            if(input.files && input.files[0]) {
+                display.innerHTML = `✅ Imagen cargada: <span style="color:white;">${input.files[0].name}</span>`;
+            }
+        }
+
+        function publicarAnuncio(e) {
+            e.preventDefault(); 
+
+            // Obtener los valores del formulario
+            const nombre = document.getElementById('v-nombre').value;
+            const categoria = document.getElementById('v-categoria').value;
+            const marca = document.getElementById('v-marca').value;
+            const precio = parseFloat(document.getElementById('v-precio').value);
+            const estado = document.getElementById('v-estado').value;
+            const vendedor = document.getElementById('v-vendedor').value;
+            const desc = document.getElementById('v-desc').value;
+            const fotoInput = document.getElementById('v-foto');
+
+            // Leer la imagen subida
+            if(fotoInput.files && fotoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imgUrl = event.target.result;
+                    crearNuevaTarjeta(nombre, categoria, marca, precio, estado, vendedor, desc, imgUrl);
+                };
+                reader.readAsDataURL(fotoInput.files[0]);
+            }
+        }
+
+        function crearNuevaTarjeta(nombre, cat, marca, precio, estado, vendedor, desc, imgUrl) {
+            const grid = document.getElementById('catalog-grid');
+            const currentId = idCounter++;
+            
+            let catDisplay = "Colección";
+            if(cat === "instrumentos") catDisplay = "Instrumentos";
+            if(cat === "ropa") catDisplay = "Ropa";
+
+            // Crear el HTML de la nueva tarjeta 
+            const cardHTML = `
+                <div class="product-card reveal active" data-category="${cat}">
+                    <span class="product-badge" style="background-color: var(--btn-primary); color: white;">¡Nuevo Ingreso!</span>
+                    <div class="product-img-container">
+                        <img src="${imgUrl}" alt="${nombre}">
+                    </div>
+                    <div class="product-info">
+                        <h3>${nombre}</h3>
+                        <div class="product-meta"><span>Categoría:</span> ${catDisplay}</div>
+                        <div class="product-meta"><span>Marca:</span> ${marca}</div>
+                        <div class="product-meta"><span>Stock:</span> 1</div>
+                        <div class="product-meta"><span>Estado:</span> ${estado}</div>
+                        <div class="product-meta"><span>Vendedor:</span> ${vendedor}</div>
+                        <span class="price-tag">$${precio.toFixed(2)}</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-detail" onclick="openDetail('desc-${currentId}')">Ver detalle</button>
+                        <button class="btn btn-add" onclick="addToCart('${nombre}', ${precio})">+ Carrito</button>
+                    </div>
+                    <div id="desc-${currentId}" class="product-detail-overlay">
+                        <h4>${nombre}</h4>
+                        <p>${desc}</p>
+                        <button class="close-btn" onclick="closeDetail('desc-${currentId}')">Cerrar X</button>
+                    </div>
+                </div>
+            `;
+
+            // Insertar la tarjeta al final del catálogo
+            grid.insertAdjacentHTML('beforeend', cardHTML);
+
+            // Reiniciar el formulario
+            document.getElementById('form-venta').reset();
+            document.getElementById('file-name-display').innerHTML = `📸 Haz clic aquí para subir una imagen de tu computadora<span>Formatos: .JPG, .PNG</span>`;
+            
+            // Cerrar el modal y scrollear al catálogo
+            closeSellForm();
+            alert(`¡Éxito! Tu reliquia "${nombre}" ha sido subida al escenario.`);
+            document.getElementById('catalogo').scrollIntoView({behavior: 'smooth'});
+            
+            // Actualizar filtros
+            document.querySelector('.filter-btn.active').click();
+        }
+
+        // --- Animación de scroll interactiva ---
+        document.addEventListener("DOMContentLoaded", function() {
+            const reveals = document.querySelectorAll(".reveal");
+
+            const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("active");
+                    }
+                });
+            }, {
+                threshold: 0.1, 
+                rootMargin: "0px 0px -50px 0px"
+            });
+
+            reveals.forEach(reveal => {
+                revealOnScroll.observe(reveal);
+            });
+        });
+    </script>
+</body>
+</html>
